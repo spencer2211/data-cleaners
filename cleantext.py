@@ -1,5 +1,9 @@
-# TODO: Create standard header ###
-import numpy as np
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Add header comments here
+"""
+
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 
@@ -10,7 +14,7 @@ class CleanText:
 
     def __init__(self):
         pass
-    
+
     def _clean_nl(self, nl_text):
         self.nl_txt = nl_text.replace(r'\n', '')
 
@@ -20,7 +24,7 @@ class CleanText:
 
         if isinstance(web_text, pd.DataFrame):
             self.df = web_text.copy()
-            self.df = df.applymap(
+            self.df = self.df.applymap(
                 lambda text: bs(text, 'html.parser').get_text()
                 if isinstance(text, str) else text)
 
@@ -30,7 +34,7 @@ class CleanText:
             return self.df
 
         elif isinstance(web_text, list):
-            self.list_txt = []       
+            self.list_txt = []
             for e in web_text:
                 self.cl = CleanText()
                 self.list_txt.append(self.cl.clean_web_text(e))
@@ -39,16 +43,16 @@ class CleanText:
 
         elif isinstance(web_text, dict):
             self.dict_txt = {}
-            for k,v in web_text.items():
+            for k, v in web_text.items():
                 self.dict_txt[self.clean_web_text(k)] = self.clean_web_text(v)
-            
+
             return self.dict_txt
-        
+
         elif isinstance(web_text, (set, frozenset)):
             self.set_txt = set()
             for s in web_text:
                 self.set_txt.add(self.clean_web_text(s))
-            
+
             return self.set_txt
 
         elif isinstance(web_text, tuple):
@@ -65,7 +69,7 @@ class CleanText:
             self.new_txt = self._clean_nl(self.new_txt)
 
             return self.new_txt
-        
+
         elif isinstance(web_text, (int, float, complex)):
             self.n = web_text
 
