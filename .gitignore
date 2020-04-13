@@ -149,3 +149,4 @@ cython_debug/
 media
 static
 .idea
+.vscode/settings.json

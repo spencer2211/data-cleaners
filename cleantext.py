@@ -74,7 +74,3 @@ class CleanText:
             self.n = web_text
 
             return self.n
-
-
-if __name__ == '__main__':
-    CleanText().clean_web_text()
