@@ -54,6 +54,7 @@ class CleanNumbers:
 
     def _fill_missing(self, miss, rpl_empty_with, drop_na, exceptions):
         # TODO: Add section for rpl_empty_with='NaN'
+        # TODO: Separate dropna and rpl_empty_with logic
         try:
             cols = [x for x in miss.columns if x not in exceptions]
         except TypeError:
