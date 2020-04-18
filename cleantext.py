@@ -5,9 +5,16 @@ Add header comments here
 """
 
 import pandas as pd
+import re as re
 from bs4 import BeautifulSoup as bs
 
-HTML = [r'<div>\nhello\n</div>', {r'<div>\nhola\n</div>': [r'2nd', r'\n\n']}]
+# TODO: Assertion statements where applicable
+
+# HTML = ['<div>\n\thello\n</div>', {'<div>\nhola\n </div>': ['2nd', '\n\n']}]
+HTML = pd.DataFrame([{'Greeting': '<div>\n\tHELLO\n</div>',
+                      'Position': ['1st\n', '2nd', 1]},
+                     {'Greeting': '<div>\nHOLA\n </div>',
+                      'Position': '1/2\n\n'}])
 
 
 class CleanText:
@@ -16,9 +23,15 @@ class CleanText:
         pass
 
     def _clean_nl(self, nl_text):
-        self.nl_txt = nl_text.replace(r'\n', '')
+        self.rpl_txt = re.sub(r'\\s+', ' ', nl_text)
+        to_replace = [r'\n', r'\t', r'\r']
 
-        return self.nl_txt
+        for trpl in to_replace:
+            self.rpl_txt = re.sub(trpl, '', self.rpl_txt)
+
+        self.rpl_txt = self.rpl_txt.strip()
+
+        return self.rpl_txt
 
     def clean_web_text(self, web_text=HTML):
 
@@ -26,10 +39,12 @@ class CleanText:
             self.df = web_text.copy()
             self.df = self.df.applymap(
                 lambda text: bs(text, 'html.parser').get_text()
-                if isinstance(text, str) else text)
+                if isinstance(text, str) else text
+            )
 
-            # self.df = df.replace(r'\\n', '', regex=True)
-            # self.df = df.replace('', np.nan)
+            self.df = self.df.applymap(
+                lambda text2: self.clean_web_text(text2)
+            )
 
             return self.df
 

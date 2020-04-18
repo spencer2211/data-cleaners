@@ -8,29 +8,29 @@ import numpy as np
 import pandas as pd
 from re import search
 
+from cleantext import CleanText as ct
+
+# TODO: Assertion statements throughout where applicable
+
 
 class CleanNumbers:
 
     def __init__(self, datafile):
-        # TODO: assertion statements
-        self.verbose = False
-
-        # TODO: add file/data type sniffer logic
+        # TODO: Take more than just dataframes (sniffers?)
         if isinstance(datafile, pd.DataFrame):
             self.data = datafile
+            self.data = ct().clean_web_text(self.data)
         else:
             print('Data not provided in DataFrame format')
-            # TODO: Learn how to place a brake here
             raise SystemExit(0)
 
     def _whole_check(self, w):
-        # TODO: assertion statements
         """
         Checks if an entire series are whole number equivalents and returns the
         applicable boolean
         """
-        if not isinstance(w.any(), str):
-            self.w_check = ((w % 1) == 0).all()
+        if w.dtypes != 'object':
+            self.w_check = ((w % 1) == 0).all(skipna=True)
             if self.w_check:
                 return True
             else:
@@ -52,38 +52,43 @@ class CleanNumbers:
             n = whole - frac if whole < 0 else whole + frac
             return n
 
-    def _fill_missing(self, miss, replace_with):
-        # TODO: Fix mean/median datatypes
-        for col in miss.columns:
-            m = np.nan
-            if (replace_with == 'mean'
-                    and miss[col].dtypes != 'object'):
-                m = miss[col].mean().astype(miss[col].dtypes)
-                # m = m.astype(miss[col].dtypes)
-            elif (replace_with == 'median'
-                    and miss[col].dtypes != 'object'):
-                m = miss[col].median().round().astype(miss[col].dtypes)
-                # m = m.astype(miss[col].dtypes)
-            elif (replace_with == 'zero'
-                    and miss[col].dtypes != 'object'):
-                m = np.zeros([1])[0].astype(miss[col].dtypes)
-                # m = m.astype(miss[col].dtypes)
+    def _fill_missing(self, miss, rpl_empty_with, drop_na, exceptions):
+        # TODO: Add section for rpl_empty_with='NaN'
+        try:
+            cols = [x for x in miss.columns if x not in exceptions]
+        except TypeError:
+            cols = miss.columns
 
-            miss[col] = miss[col].fillna(m)
-            print(m)
+        if isinstance(drop_na, list):
+            miss.dropna(subset=drop_na, inplace=True)
+        elif drop_na:
+            miss.dropna(inplace=True)
+        else:
+            for col in cols:
+                dt = miss[col].dtypes
+                m = np.nan
+                if (rpl_empty_with == 'mean' and dt != 'object'):
+                    m = np.mean(miss[col]).astype(dt)
+                elif (rpl_empty_with == 'median' and dt != 'object'):
+                    m = np.median(miss[col]).astype(dt)
+                elif (rpl_empty_with == 'zeros' and dt != 'object'):
+                    m = np.zeros([1])[0].astype(dt)
+
+                miss[col] = miss[col].fillna(m)
 
         return miss
 
-    def memory_redux(self, num_mem, verbose=False):
-        # TODO: assertion statements
-        if verbose:
-            self.verbose = verbose
-
+    def memory_reduction(self, num_mem, verbose, exceptions):
         if isinstance(num_mem, pd.DataFrame):
             start_mem = num_mem.memory_usage().sum() / 1024**2
 
+            try:
+                cols = [x for x in num_mem.columns if x not in exceptions]
+            except TypeError:
+                cols = num_mem.columns
+
             self.df = num_mem.copy()
-            for col in self.df.columns:
+            for col in cols:
                 self.df[col] = self.df[col].replace(['', ' '], np.nan)
 
                 # Check for fractions and convert using frac_to_float()
@@ -111,21 +116,20 @@ class CleanNumbers:
 
             msg = f'Mem. usage decreased to{end_mem:5.2f} MB \
 ({reduction * 100:.1f} % reduction) for a savings of{savings:5.2f} MB'
-            if self.verbose:
+            if verbose:
                 print(msg)
 
             return self.df
 
-    def clean_numbers(self, verbose=False, replace_with='NaN'):
-        # TODO: assertion statements
-        # Handle missing numbers (fill with avg, drop rows, etc.)
-        # handle outliers (drop, change to avg, etc.)
-        if verbose:
-            self.verbose = verbose
+    def clean_numbers(self, verbose=False, rpl_empty_with='NaN',
+                      drop_na=False, exceptions=None):
+        # TODO: handle outliers (drop, change to avg, etc.)
+        if rpl_empty_with != 'NaN':
+            self.numbers = self._fill_missing(self.data,
+                                              rpl_empty_with,
+                                              drop_na,
+                                              exceptions)
 
-        # TODO: place edge case pre-check here
-        self.numbers = self.memory_redux(self.data, self.verbose)
-        if replace_with != 'NaN':
-            self.numbers = self._fill_missing(self.numbers, replace_with)
+        self.numbers = self.memory_reduction(self.numbers, verbose, exceptions)
 
         return self.numbers
