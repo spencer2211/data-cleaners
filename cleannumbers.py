@@ -39,6 +39,12 @@ class CleanNumbers:
             return False
 
     def _frac_to_float(self, frac_str):
+        """
+        Converts and returns any applicable strings from fractions to floats
+
+        Reference:
+        https://stackoverflow.com/questions/1806278/convert-fraction-to-float/19073403#19073403
+        """
         try:
             return float(frac_str)
         except ValueError:
@@ -130,6 +136,8 @@ class CleanNumbers:
                                               rpl_empty_with,
                                               drop_na,
                                               exceptions)
+        else:
+            self.numbers = self.data
 
         self.numbers = self.memory_reduction(self.numbers, verbose, exceptions)
 

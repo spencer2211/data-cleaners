@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup as bs
 
 # TODO: Assertion statements where applicable
 
+# Test sample data
 # HTML = ['<div>\n\thello\n</div>', {'<div>\nhola\n </div>': ['2nd', '\n\n']}]
 HTML = pd.DataFrame([{'Greeting': '<div>\n\tHELLO\n</div>',
                       'Position': ['1st\n', '2nd', 1]},
@@ -18,11 +19,25 @@ HTML = pd.DataFrame([{'Greeting': '<div>\n\tHELLO\n</div>',
 
 
 class CleanText:
+    """
+    Class to execute common text cleaning task in general/serialized fashion.
+
+    Current implementation:
+    - web test cleaning
+    - common erroneous charter cleaning
+
+    Future implementation:
+    - xml text clean (replace/remove namespaces)
+    """
 
     def __init__(self):
         pass
 
     def _clean_nl(self, nl_text):
+        """
+        Removes newline, carriage return, tabs, and erroneous spaces and
+        returns the result
+        """
         self.rpl_txt = re.sub(r'\\s+', ' ', nl_text)
         to_replace = [r'\n', r'\t', r'\r']
 
@@ -34,6 +49,9 @@ class CleanText:
         return self.rpl_txt
 
     def clean_web_text(self, web_text=HTML):
+        """
+        Removes common web text tags and returns the result
+        """
 
         if isinstance(web_text, pd.DataFrame):
             self.df = web_text.copy()
