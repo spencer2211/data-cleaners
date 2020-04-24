@@ -152,8 +152,6 @@ static
 .vscode/settings.json
 
 # files
-clnotebook.ipynb
-covid_agg.ipynb
-data-cleaners.yml
-fe-pipeline.ipynb
-covid-us-aggd.csv
+*.yml
+*.ipynb
+*.csv
